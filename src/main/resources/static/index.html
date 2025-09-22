@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestión de Propiedades</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1><i class="fas fa-home"></i> Sistema de Gestión de Propiedades</h1>
+            <button id="addPropertyBtn" class="btn btn-primary" title="Crear nueva propiedad">
+                <i class="fas fa-plus"></i> Nueva Propiedad
+            </button>
+        </header>
+
+        <main class="main-content" role="main">
+            <!-- Property List Section -->
+            <section id="propertyList" class="property-list">
+                <h2>Lista de Propiedades</h2>
+                <div id="propertiesContainer" class="properties-grid">
+                    <!-- Properties will be loaded here dynamically -->
+                </div>
+                <div id="loadingMessage" class="loading" role="status" aria-live="polite">
+                    <i class="fas fa-spinner fa-spin"></i> Cargando propiedades...
+                </div>
+                <div id="emptyMessage" class="empty-state" style="display: none;">
+                    <i class="fas fa-home"></i>
+                    <h3>No hay propiedades registradas</h3>
+                    <p>Comienza agregando tu primera propiedad haciendo clic en "Nueva Propiedad"</p>
+                </div>
+            </section>
+
+            <!-- Property Form Section -->
+            <section id="propertyForm" class="property-form" style="display: none;">
+                <h2 id="formTitle">Nueva Propiedad</h2>
+                <form id="propertyFormElement" novalidate>
+                    <div class="form-group">
+                        <label for="address">
+                            Dirección <span class="required">*</span>
+                        </label>
+                        <input 
+                            type="text" 
+                            id="address" 
+                            name="address" 
+                            required 
+                            maxlength="255"
+                            placeholder="Ingrese la dirección de la propiedad"
+                            autocomplete="street-address"
+                        >
+                        <div class="error-message" id="addressError" role="alert"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="price">
+                            Precio <span class="required">*</span>
+                        </label>
+                        <div class="input-wrapper">
+                            <span class="input-prefix">$</span>
+                            <input 
+                                type="number" 
+                                id="price" 
+                                name="price" 
+                                required 
+                                min="1" 
+                                max="999999999"
+                                step="0.01"
+                                placeholder="0.00"
+                                autocomplete="off"
+                            >
+                        </div>
+                        <small class="help-text">Precio en pesos colombianos</small>
+                        <div class="error-message" id="priceError" role="alert"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="size">
+                            Tamaño (m²) <span class="required">*</span>
+                        </label>
+                        <div class="input-wrapper">
+                            <input 
+                                type="number" 
+                                id="size" 
+                                name="size" 
+                                required 
+                                min="1" 
+                                max="999999"
+                                step="0.01"
+                                placeholder="0.00"
+                                autocomplete="off"
+                            >
+                            <span class="input-suffix">m²</span>
+                        </div>
+                        <small class="help-text">Tamaño en metros cuadrados</small>
+                        <div class="error-message" id="sizeError" role="alert"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Descripción</label>
+                        <textarea 
+                            id="description" 
+                            name="description" 
+                            rows="4" 
+                            maxlength="1000"
+                            placeholder="Ingrese una descripción detallada de la propiedad (opcional)"
+                        ></textarea>
+                        <div class="character-count">
+                            <span id="descriptionCount">0</span>/1000 caracteres
+                        </div>
+                        <div class="error-message" id="descriptionError" role="alert"></div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Guardar
+                        </button>
+                        <button type="button" id="cancelBtn" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancelar
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Property Details Modal -->
+            <div id="propertyModal" class="modal" style="display: none;" role="dialog" aria-labelledby="modalTitle" aria-hidden="true">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 id="modalTitle">Detalles de la Propiedad</h3>
+                        <button id="closeModal" class="close-btn" aria-label="Cerrar modal">&times;</button>
+                    </div>
+                    <div class="modal-body" id="modalBody">
+                        <!-- Property details will be loaded here -->
+                    </div>
+                    <div class="modal-footer">
+                        <button id="editPropertyBtn" class="btn btn-primary" title="Editar esta propiedad">
+                            <i class="fas fa-edit"></i> Editar
+                        </button>
+                        <button id="deletePropertyBtn" class="btn btn-danger" title="Eliminar esta propiedad">
+                            <i class="fas fa-trash"></i> Eliminar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Toast Notifications -->
+        <div id="toastContainer" class="toast-container" aria-live="polite" role="status"></div>
+    </div>
+
+    <!-- Additional styles for improved UI (complementing styles.css) -->
+    <style>
+        .required {
+            color: #e74c3c;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-prefix {
+            position: absolute;
+            left: 16px;
+            color: #7f8c8d;
+            font-weight: 500;
+            z-index: 1;
+            font-size: 14px;
+        }
+
+        .input-suffix {
+            position: absolute;
+            right: 16px;
+            color: #7f8c8d;
+            font-weight: 500;
+            z-index: 1;
+            font-size: 14px;
+        }
+
+        .input-wrapper input[type="number"] {
+            padding-left: 36px;
+            padding-right: 44px;
+        }
+
+        .help-text {
+            display: block;
+            margin-top: 6px;
+            color: #7f8c8d;
+            font-size: 0.85rem;
+            font-style: italic;
+        }
+
+        .character-count {
+            text-align: right;
+            margin-top: 6px;
+            font-size: 0.85rem;
+            color: #7f8c8d;
+            font-weight: 500;
+        }
+
+        .empty-state {
+            padding: 60px 20px !important;
+        }
+
+        .empty-state h3 {
+            margin: 20px 0 12px 0;
+            color: #2c3e50;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .empty-state p {
+            margin: 0;
+            color: #7f8c8d;
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        .modal[aria-hidden="false"] {
+            display: flex !important;
+        }
+
+        .modal[aria-hidden="true"] {
+            display: none !important;
+        }
+
+        /* Enhanced property card styles */
+        .property-card {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .property-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .property-card:hover::before {
+            left: 100%;
+        }
+
+        /* Enhanced form focus styles */
+        .form-group input:focus,
+        .form-group textarea:focus {
+            transform: translateY(-1px);
+        }
+
+        /* Toast enhancements */
+        .toast {
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .toast::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255,255,255,0.9);
+            z-index: -1;
+            border-radius: 8px;
+        }
+
+        /* Loading spinner enhancement */
+        .loading i {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .input-wrapper input[type="number"] {
+                padding-left: 32px;
+                padding-right: 40px;
+            }
+
+            .input-prefix {
+                left: 12px;
+            }
+
+            .input-suffix {
+                right: 12px;
+            }
+
+            .empty-state {
+                padding: 40px 15px !important;
+            }
+
+            .empty-state h3 {
+                font-size: 1.3rem;
+            }
+        }
+    </style>
+
+    <script>
+        // Character counter for description
+        document.addEventListener('DOMContentLoaded', function() {
+            const descriptionField = document.getElementById('description');
+            const descriptionCount = document.getElementById('descriptionCount');
+            
+            if (descriptionField && descriptionCount) {
+                descriptionField.addEventListener('input', function() {
+                    const count = this.value.length;
+                    descriptionCount.textContent = count;
+                    
+                    if (count > 900) {
+                        descriptionCount.style.color = '#e74c3c';
+                    } else if (count > 800) {
+                        descriptionCount.style.color = '#f39c12';
+                    } else {
+                        descriptionCount.style.color = '#7f8c8d';
+                    }
+                });
+            }
+
+            // Handle modal accessibility
+            const modal = document.getElementById('propertyModal');
+            if (modal) {
+                // Trap focus in modal
+                modal.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape') {
+                        const closeBtn = document.getElementById('closeModal');
+                        if (closeBtn) closeBtn.click();
+                    }
+                });
+            }
+        });
+    </script>
+
+    <script src="script.js"></script>
+</body>
+</html>
