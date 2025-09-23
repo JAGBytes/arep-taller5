@@ -1,9 +1,33 @@
 version: '3.8'
 
 services:
+  mysql-db:
+    image: mysql:8.0
+    container_name: taller5-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: tallerjpa
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    command: --default-authentication-plugin=mysql_native_password
+
   arep-app:
     build: .
+    container_name: taller5-app
     ports:
       - "8080:8080"
-    env_file:
-      - .env
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/tallerjpa?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: ${MYSQL_USER}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: true
+    depends_on:
+      - mysql-db
+
+volumes:
+  mysql_data:

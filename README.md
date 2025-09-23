@@ -10,26 +10,35 @@ Requisitos previos:
 - Maven 3.9+
 - MySQL 8 (local o remoto)
 
+### Opción 1: Ejecución con Docker Compose (Recomendado)
+
+1. Configurar variables de entorno:
+
+   - Copiar `env.example` a `.env`
+   - Editar `.env` con tus credenciales de base de datos
+
+2. Ejecutar con Docker Compose:
+
+```
+docker-compose up --build
+```
+
+3. Acceder a la aplicación:
+   - Frontend: `http://localhost:8080/`
+   - API: `http://localhost:8080/api/properties`
+
+### Opción 2: Ejecución Manual
+
 1. Configurar base de datos MySQL (crear DB y usuario):
 
 ```
 CREATE DATABASE tallerjpa CHARACTER SET utf8mb4;
-CREATE USER 'myuser'@'%' IDENTIFIED BY 'Admin123!';
+CREATE USER 'myuser'@'%' IDENTIFIED BY 'tu_password';
 GRANT ALL PRIVILEGES ON tallerjpa.* TO 'myuser'@'%';
 FLUSH PRIVILEGES;
 ```
 
-2. Configurar propiedades de conexión:
-
-- Archivo: `src/main/resources/application.properties`
-- Variables principales:
-
-```
-spring.datasource.url=jdbc:mysql://HOST:3306/tallerjpa?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-spring.datasource.username=
-spring.datasource.password=
-spring.jpa.hibernate.ddl-auto=update
-```
+2. Configurar propiedades de conexión en `src/main/resources/application.properties`
 
 3. Construir y ejecutar:
 
@@ -38,14 +47,10 @@ mvn clean package
 java -jar target/arep-taller5-1.0-SNAPSHOT.jar
 ```
 
-4. Frontend estático:
-
-- Abrir `src/main/resources/static/index.html` en el navegador o acceder a `http://localhost:8080/` si el archivo lo sirve el backend (está en `resources/static`).
-
-5. Probar API rápidamente:
+4. Probar API:
 
 ```
-curl http://localhost:8080/api/properties | jq
+curl http://localhost:8080/api/properties
 ```
 
 ## Arquitectura del sistema
@@ -182,7 +187,7 @@ newgrp docker
 docker login -u jorggg
 ```
 
-3. Construir y publicar la imagen :
+3. Construir y publicar la imagen:
 
 ```
 docker build -t arep-taller5:latest .
@@ -197,9 +202,11 @@ docker pull jorggg/arep-taller5:latest
 docker run -d --name arep-app -p 8080:8080 \
   -e SPRING_DATASOURCE_URL="jdbc:mysql://<IP_DB>:3306/tallerjpa?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC" \
   -e SPRING_DATASOURCE_USERNAME="myuser" \
-  -e SPRING_DATASOURCE_PASSWORD="Admin123!" \
+  -e SPRING_DATASOURCE_PASSWORD="<tu_password>" \
   jorggg/arep-taller5:latest
 ```
+
+**Nota:** Reemplaza `<IP_DB>` con la IP de tu servidor MySQL y `<tu_password>` con tu contraseña de base de datos.
 
 ## Estructura del repositorio
 
@@ -207,6 +214,8 @@ docker run -d --name arep-app -p 8080:8080 \
 - `src/main/resources/static` frontend (HTML/JS/CSS).
 - `src/test/java/...` pruebas unitarias (controller y service).
 - `Dockerfile` imagen de la aplicación.
+- `docker-compose.yml` configuración para desarrollo local con MySQL.
+- `env.example` archivo de ejemplo para variables de entorno.
 - `pom.xml` dependencias y build (Spring Boot 3.3.x, JPA, MySQL, Lombok, tests).
 
 ## Video de la aplicacion desplegada
