@@ -1,6 +1,12 @@
 ## AREP Taller 5 - CRUD de Propiedades (Spring Boot + MySQL + Docker + AWS)
 
-Aplicación web sencilla para gestionar propiedades inmobiliarias (Create, Read, Update, Delete) con un backend en Spring Boot, persistencia con JPA/Hibernate y MySQL, frontend estático (HTML/JS) y empaquetado Docker para despliegue en AWS. Incluye pruebas unitarias del controlador y del servicio.
+Aplicación web sencilla para gestionar propiedades inmobiliarias (Create, Read, Update, Delete) con un backend en Spring Boot, persistencia con JPA/Hibernate y MySQL, frontend estático (HTML/JS) y empaquetado Docker para despliegue en AWS. Incluye pruebas unitarias del controlador y del servicio. El repo también contiene el desarrollo de un taller introductorio a JPA y AWS-CLI
+
+### Link taller JPA y AWS-CLI
+
+```
+https://github.com/JAGBytes/arep-AWS-CLI-JPA.git
+```
 
 ### Cómo ejecutar el proyecto en local
 
